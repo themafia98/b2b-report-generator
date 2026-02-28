@@ -6,7 +6,7 @@ import { ToastMessages } from "../common/Toast";
 import { LanguageSelector } from "../language-selector/language-selector.tsx";
 import { GeneralInvoiceBox } from "./general-inoice-box.tsx";
 import { InvoiceBodyBox } from "./invoice-body-box.tsx";
-import { GridContainer, GridColumn, ErrorText } from "./styled-components";
+import { GridContainer, GridColumn } from "./styled-components";
 import { useFormData } from "./useFormData";
 import { useWorkList } from "./useWorkList";
 import { Table } from "./Table";
@@ -87,7 +87,7 @@ export const Builder = () => {
         localStorage.getItem("invoice") ? JSON.parse(localStorage.getItem("invoice") as string) : {}
     );
     const { workList, addWorkItem, updateWorkItem, removeWorkItem } = useWorkList();
-    const { errors, validate } = useValidation(formData);
+    const { validate } = useValidation(formData);
     const { toast, showToast, hideToast } = useToast();
     const [showPreview, setShowPreview] = useState(false);
     const reportsStorage = useReportsStorage();
@@ -127,18 +127,6 @@ export const Builder = () => {
                             onTitleChange={selectFieldHandler("title")}
                             onDateChange={selectFieldHandler("date")}
                         />
-                        {errors.title && <ErrorText>{t("title")}: {errors.title}</ErrorText>}
-                        {errors.date && <ErrorText>{t("date")}: {errors.date}</ErrorText>}
-                        {errors.name && <ErrorText>{t("name")}: {errors.name}</ErrorText>}
-                        {errors.address && <ErrorText>{t("address")}: {errors.address}</ErrorText>}
-                        {errors.postalCode && <ErrorText>{t("postalCode")}: {errors.postalCode}</ErrorText>}
-                        {errors.city && <ErrorText>{t("city")}: {errors.city}</ErrorText>}
-                        {errors.nip && <ErrorText>{t("nip")}: {errors.nip}</ErrorText>}
-                        {errors.customerName && <ErrorText>{t("customerName")}: {errors.customerName}</ErrorText>}
-                        {errors.customerAddress && <ErrorText>{t("customerAddress")}: {errors.customerAddress}</ErrorText>}
-                        {errors.customerPostalCode && <ErrorText>{t("customerPostalCode")}: {errors.customerPostalCode}</ErrorText>}
-                        {errors.customerCity && <ErrorText>{t("customerCity")}: {errors.customerCity}</ErrorText>}
-                        {errors.customerNip && <ErrorText>{t("customerNip")}: {errors.customerNip}</ErrorText>}
                         <Table
                             workList={workList}
                             updateWorkItem={updateWorkItem}
