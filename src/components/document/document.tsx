@@ -120,15 +120,13 @@ export const Document = ({ formData }: DocumentProps) => {
         customerNip: formData.customerNip || randomCustomer.customerNip,
     };
     // Use current date if not provided
-    const currentDate = "February 2026 / Luty 2026";
     const totalHours = formData.workList?.reduce((sum, item) => sum + (parseFloat(item.hours) || 0), 0) || 0;
     return (
         <PdfDocument>
             <Page size="A4" style={styles.page}>
                 {/* Company Section */}
                 <View style={styles.section}>
-                    <Text style={styles.title}>{formData.title || "RAPORT Z WYKONANYCH USŁUG / SERVICE REPORT FEBRUARY 2026 / LUTY 2026"}</Text>
-                    <Text style={styles.sectionText}>{formData.date || currentDate}</Text>
+                    <Text style={styles.title}>{formData.title ||  `RAPORT Z WYKONANYCH USŁUG / SERVICE REPORT ${formData.date}`}</Text>
                 </View>
 
                 {/* Company Information */}
