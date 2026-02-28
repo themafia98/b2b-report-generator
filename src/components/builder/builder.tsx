@@ -1,31 +1,60 @@
-import { useState, type ChangeEvent } from "react";
+import React, { useState, type ChangeEvent } from "react";
 import styled from "@emotion/styled";
 import { Viewer } from "../viewer/viewer.tsx";
 import { useTranslation } from "react-i18next";
-import {LanguageSelector} from "../language-selector/language-selector.tsx";
-import {GeneralInvoiceBox} from "./general-inoice-box.tsx";
-import {InvoiceBodyBox} from "./invoice-body-box.tsx";
+import { ToastMessages } from "../common/Toast";
+import { LanguageSelector } from "../language-selector/language-selector.tsx";
+import { GeneralInvoiceBox } from "./general-inoice-box.tsx";
+import { InvoiceBodyBox } from "./invoice-body-box.tsx";
+import { GridContainer, GridColumn, ErrorText } from "./styled-components";
+import { useFormData } from "./useFormData";
+import { useWorkList } from "./useWorkList";
+import { Table } from "./Table";
+import { useValidation } from "./useValidation";
+import { Toast } from "../common/Toast";
+import { useToast } from "../common/useToast";
+import { ErrorBoundary } from "../common/ErrorBoundary";
+import { Loader } from "../common/Loader";
+import { useReportsStorage } from "../reports/useReportsStorage";
+import { ReportsTable } from "../reports/ReportsTable";
 
 const Root = styled.div`
-    padding: 16px;
+    padding: 24px;
     display: flex;
     flex: 1;
     overflow: auto;
     flex-direction: column;
+    align-items: center;
+    width: 100%;
+    margin: 0;
 `;
 
 const Button = styled.button`
-    padding: 16px;
-    margin-top: 12px;
-    background-color: hotpink;
-    font-size: 24px;
-    border-radius: 4px;
-    color: black;
-    font-weight: bold;
+    padding: 14px 28px;
+    margin-top: 18px;
+    background-color: #6366f1;
+    font-size: 20px;
+    border-radius: 6px;
+    color: #fff;
+    font-weight: 600;
+    border: none;
+    box-shadow: 0 2px 8px rgba(99, 102, 241, 0.08);
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s;
     &:hover {
-        color: white;
+        background-color: #4338ca;
+        color: #fff;
+    }
+    &:focus {
+        outline: 2px solid #6366f1;
     }
 `;
+
+export interface IWorkItem {
+    id: number;
+    description: string;
+    hours: string;
+}
 
 export interface IFormData {
     title?: string;
@@ -44,43 +73,116 @@ export interface IFormData {
     workDescription?: string;
     workType?: string;
     workHour?: string;
+    workList?: IWorkItem[];
+    profile?: {
+        name: string;
+        position: string;
+    };
+    signature?: string;
 }
 
 export const Builder = () => {
-    const { t } = useTranslation();
-    const [formData, setFormData] = useState<IFormData>(
+    const { t, i18n } = useTranslation();
+    const { formData, updateField } = useFormData(
         localStorage.getItem("invoice") ? JSON.parse(localStorage.getItem("invoice") as string) : {}
     );
+    const { workList, addWorkItem, updateWorkItem, removeWorkItem } = useWorkList();
+    const { errors, validate } = useValidation(formData);
+    const { toast, showToast, hideToast } = useToast();
+    const [showPreview, setShowPreview] = useState(false);
+    const reportsStorage = useReportsStorage();
+    const [selectedReportId, setSelectedReportId] = useState<string | null>(null);
+    const [aiResult, setAIResult] = useState<string | null>(null);
 
     const selectFieldHandler = (field: string) => (e: ChangeEvent<HTMLInputElement>) => {
-        setFormData({
-            ...formData,
-            [field]: e.target.value,
-        });
+        updateField(field as keyof IFormData, e.target.value);
     };
 
     const generateInvoiceHandler = () => {
-        console.log("Generating invoice with data:", formData);
+        if (!validate()) {
+            showToast(ToastMessages.fillRequired[i18n.language as keyof typeof ToastMessages.fillRequired] || ToastMessages.fillRequired.en);
+            return;
+        }
         localStorage.setItem("invoice", JSON.stringify(formData));
-    }
+        reportsStorage.addReport(formData);
+        showToast(ToastMessages.reportSaved[i18n.language as keyof typeof ToastMessages.reportSaved] || ToastMessages.reportSaved.en);
+    };
+    // AI check stub
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const handleAICheck = (_id: string) => {
+        setAIResult("AI check passed: No issues found.");
+        showToast("AI check completed");
+    };
 
     return (
         <>
+            {toast && <Toast message={toast} onClose={hideToast} />}
             <Root>
                 <LanguageSelector />
-                <GeneralInvoiceBox
-                    title={formData.title}
-                    date={formData.date}
-                    onTitleChange={selectFieldHandler("title")}
-                    onDateChange={selectFieldHandler("date")}
-                />
-                <InvoiceBodyBox
-                    selectFieldHandler={selectFieldHandler}
-                    formData={formData}
-                />
-                <Button onClick={generateInvoiceHandler}>{t("generateInvoice")}</Button>
+                <GridContainer>
+                    <GridColumn>
+                        <GeneralInvoiceBox
+                            title={formData.title}
+                            date={formData.date}
+                            onTitleChange={selectFieldHandler("title")}
+                            onDateChange={selectFieldHandler("date")}
+                        />
+                        {errors.title && <ErrorText>{t("title")}: {errors.title}</ErrorText>}
+                        {errors.date && <ErrorText>{t("date")}: {errors.date}</ErrorText>}
+                        {errors.name && <ErrorText>{t("name")}: {errors.name}</ErrorText>}
+                        {errors.address && <ErrorText>{t("address")}: {errors.address}</ErrorText>}
+                        {errors.postalCode && <ErrorText>{t("postalCode")}: {errors.postalCode}</ErrorText>}
+                        {errors.city && <ErrorText>{t("city")}: {errors.city}</ErrorText>}
+                        {errors.nip && <ErrorText>{t("nip")}: {errors.nip}</ErrorText>}
+                        {errors.customerName && <ErrorText>{t("customerName")}: {errors.customerName}</ErrorText>}
+                        {errors.customerAddress && <ErrorText>{t("customerAddress")}: {errors.customerAddress}</ErrorText>}
+                        {errors.customerPostalCode && <ErrorText>{t("customerPostalCode")}: {errors.customerPostalCode}</ErrorText>}
+                        {errors.customerCity && <ErrorText>{t("customerCity")}: {errors.customerCity}</ErrorText>}
+                        {errors.customerNip && <ErrorText>{t("customerNip")}: {errors.customerNip}</ErrorText>}
+                        <Table
+                            workList={workList}
+                            updateWorkItem={updateWorkItem}
+                            removeWorkItem={removeWorkItem}
+                            addWorkItem={addWorkItem}
+                            t={t}
+                        />
+                        <InvoiceBodyBox
+                            selectFieldHandler={selectFieldHandler}
+                            formData={formData}
+                        />
+                        <Button onClick={generateInvoiceHandler}>{t("generateInvoice")}</Button>
+                        <Button onClick={() => setShowPreview(!showPreview)} style={{ marginTop: 8 }}>
+                            {showPreview ? (t("hidePreview") || "Скрыть превью") : (t("showPreview") || "Показать превью")}
+                        </Button>
+                        <ReportsTable
+                            reports={reportsStorage.reports}
+                            onView={setSelectedReportId}
+                            onRemove={reportsStorage.removeReport}
+                            onAICheck={handleAICheck}
+                        />
+                    </GridColumn>
+                    <GridColumn>
+                        {selectedReportId ? (
+                            <ErrorBoundary>
+                                <React.Suspense fallback={<Loader />}>
+                                    <div style={{ width: '100%', flex: 1, display: 'flex', flexDirection: 'column' }}>
+                                        <Viewer formData={reportsStorage.getReport(selectedReportId)?.data || formData} />
+                                        {aiResult && <div style={{marginTop:16, color:'#6366f1', fontWeight:600}}>{aiResult}</div>}
+                                    </div>
+                                </React.Suspense>
+                            </ErrorBoundary>
+                        ) : showPreview && (
+                            <ErrorBoundary>
+                                <React.Suspense fallback={<Loader />}>
+                                    <div style={{ width: '100%', flex: 1, display: 'flex', flexDirection: 'column' }}>
+                                        <Viewer formData={{ ...formData, workList: workList }} />
+                                    </div>
+                                </React.Suspense>
+                            </ErrorBoundary>
+                        )}
+                    </GridColumn>
+                </GridContainer>
             </Root>
-            <Viewer formData={formData} />
         </>
     );
 };

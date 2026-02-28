@@ -11,23 +11,30 @@ interface IProps {
 
 export const GeneralInvoiceBox = ({ title, date, onTitleChange, onDateChange }: IProps) => {
     const { t } = useTranslation();
-
+    // Use default date if not provided
+    const defaultDate = "2026-02-28";
     return (
         <Box>
             <Column>
+                <label htmlFor="invoice-title" style={{display:'none'}}>{t("title")}</label>
                 <Input
+                    id="invoice-title"
                     type="text"
                     placeholder={t("title")}
                     value={title}
                     onChange={onTitleChange}
+                    aria-label={t("title")}
                 />
             </Column>
             <Column>
+                <label htmlFor="invoice-date" style={{display:'none'}}>{t("date")}</label>
                 <Input
+                    id="invoice-date"
                     type="date"
                     placeholder={t("date")}
-                    value={date}
+                    value={date || defaultDate}
                     onChange={onDateChange}
+                    aria-label={t("date")}
                 />
             </Column>
         </Box>

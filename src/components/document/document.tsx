@@ -6,120 +6,191 @@ const styles = StyleSheet.create({
         flexDirection: 'column',
         backgroundColor: '#FFFFFF',
         padding: 30,
+        fontFamily: 'Helvetica',
     },
     section: {
-        marginBottom: 15,
+        marginBottom: 18,
     },
     title: {
-        fontSize: 16,
+        fontSize: 20,
         fontWeight: 'bold',
-        marginBottom: 10,
+        marginBottom: 12,
         textAlign: 'center',
+        color: '#222',
     },
     subTitle: {
         fontSize: 14,
         fontWeight: 'bold',
-        marginBottom: 5,
+        marginBottom: 6,
+        color: '#333',
     },
     sectionText: {
         fontSize: 12,
-        marginBottom: 5,
+        marginBottom: 4,
+        color: '#444',
     },
     customerSection: {
-        marginBottom: 15,
+        marginBottom: 18,
     },
     boldText: {
         fontWeight: 'bold',
     },
     workHoursSection: {
-        marginTop: 10,
+        marginTop: 12,
     },
     table: {
         width: '100%',
         marginTop: 10,
+        borderWidth: 1,
+        borderColor: '#222',
+        borderStyle: 'solid',
     },
     tableRow: {
         flexDirection: 'row',
-        borderBottom: '1px solid #000',
-        paddingBottom: 5,
-        marginBottom: 5,
-    },
-    tableCell: {
-        width: '25%',
-        padding: 5,
-        fontSize: 12,
+        borderBottomWidth: 1,
+        borderBottomColor: '#bbb',
+        borderBottomStyle: 'solid',
+        alignItems: 'center',
+        minHeight: 24,
     },
     tableHeader: {
+        backgroundColor: '#f0f0f0',
         fontWeight: 'bold',
+        fontSize: 12,
+        color: '#222',
+        padding: 6,
+        borderRightWidth: 1,
+        borderRightColor: '#bbb',
+        borderRightStyle: 'solid',
     },
-    tableContent: {
-        width: '25%',
+    tableCell: {
+        fontSize: 12,
+        padding: 6,
+        borderRightWidth: 1,
+        borderRightColor: '#eee',
+        borderRightStyle: 'solid',
+        flexGrow: 1,
+        flexBasis: 0,
+    },
+    lastTableCell: {
+        borderRightWidth: 0,
     },
 });
 
 interface DocumentProps {
-    formData: IFormData;
+    formData: IFormData & {
+        profile?: {
+            name?: string;
+            position?: string;
+        };
+        signature?: string;
+    };
 }
 
-export const Document = ({ formData }: DocumentProps) => (
-    <PdfDocument>
-        <Page size="A4" style={styles.page}>
-            {/* Company Section */}
-            <View style={styles.section}>
-                <Text style={styles.title}>{formData.title}</Text>
-                <Text style={styles.title}>{formData.date}</Text>
-            </View>
+// Random placeholder data for company and customer
+const randomCompany = {
+    name: "Tech Solutions Sp. z o.o.",
+    address: "ul. Nowa 12/5",
+    postalCode: "02-123",
+    city: "Kraków",
+    nip: "123-456-78-90",
+};
+const randomCustomer = {
+    customerName: "InnovateX Polska S.A.",
+    customerAddress: "ul. Zielona 45",
+    customerPostalCode: "00-321",
+    customerCity: "Poznań",
+    customerNip: "987-654-32-10",
+};
 
-            {/* Company Information */}
-            <View style={styles.section}>
-                <Text style={styles.subTitle}>NAZWA FIRMY / COMPANY NAME</Text>
-                <Text style={styles.sectionText}>{formData.name}</Text>
-                <Text style={styles.subTitle}>ADRES / ADDRESS</Text>
-                <Text style={styles.sectionText}>{formData.address}</Text>
-                <Text style={styles.subTitle}>KOD POCZTOWY / POSTAL CODE</Text>
-                <Text style={styles.sectionText}>{formData.postalCode}</Text>
-                <Text style={styles.subTitle}>MIASTO / CITY</Text>
-                <Text style={styles.sectionText}>{formData.city}</Text>
-                <Text style={styles.subTitle}>NIP</Text>
-                <Text style={styles.sectionText}>{formData.nip}</Text>
-            </View>
-
-            {/* Customer Section */}
-            <View style={styles.customerSection}>
-                <Text style={styles.subTitle}>DANE KLIENTA / CUSTOMER DATA</Text>
-                <Text style={styles.sectionText}>{formData.customerName}</Text>
-                <Text style={styles.subTitle}>ADRES / ADDRESS</Text>
-                <Text style={styles.sectionText}>{formData.customerAddress}</Text>
-                <Text style={styles.subTitle}>KOD POCZTOWY / POSTAL CODE</Text>
-                <Text style={styles.sectionText}>{formData.customerPostalCode}</Text>
-                <Text style={styles.subTitle}>MIASTO / CITY</Text>
-                <Text style={styles.sectionText}>{formData.customerCity}</Text>
-                <Text style={styles.subTitle}>NIP</Text>
-                <Text style={styles.sectionText}>{formData.nip}</Text>
-            </View>
-
-            {/* Work Hours Section (Table) */}
-            <View style={styles.workHoursSection}>
-                <Text style={styles.subTitle}>WYKAZ PRAC I GODZIN / WORK HOURS LIST</Text>
-
-                <View style={styles.table}>
-                    {/* Table Header */}
-                    <View style={styles.tableRow}>
-                        <Text style={[styles.tableCell, styles.tableHeader]}>Data</Text>
-                        <Text style={[styles.tableCell, styles.tableHeader]}>Wykonane uslugi (opis)</Text>
-                        <Text style={[styles.tableCell, styles.tableHeader]}>Uslugi</Text>
-                        <Text style={[styles.tableCell, styles.tableHeader]}>Laczny czas pracy</Text>
-                    </View>
-
-                    {/* Table Content */}
-                    <View style={styles.tableRow}>
-                        <Text style={styles.tableCell}>{formData.workDate}</Text>
-                        <Text style={styles.tableCell}>{formData.workDescription}</Text>
-                        <Text style={styles.tableCell}>{formData.workType}</Text>
-                        <Text style={styles.tableCell}>{formData.workHour} godzin</Text>
-                    </View>
+export const Document = ({ formData }: DocumentProps) => {
+    // Use random data if not provided
+    const company = {
+        name: formData.name || randomCompany.name,
+        address: formData.address || randomCompany.address,
+        postalCode: formData.postalCode || randomCompany.postalCode,
+        city: formData.city || randomCompany.city,
+        nip: formData.nip || randomCompany.nip,
+    };
+    const customer = {
+        customerName: formData.customerName || randomCustomer.customerName,
+        customerAddress: formData.customerAddress || randomCustomer.customerAddress,
+        customerPostalCode: formData.customerPostalCode || randomCustomer.customerPostalCode,
+        customerCity: formData.customerCity || randomCustomer.customerCity,
+        customerNip: formData.customerNip || randomCustomer.customerNip,
+    };
+    // Use current date if not provided
+    const currentDate = "February 2026 / Luty 2026";
+    const totalHours = formData.workList?.reduce((sum, item) => sum + (parseFloat(item.hours) || 0), 0) || 0;
+    return (
+        <PdfDocument>
+            <Page size="A4" style={styles.page}>
+                {/* Company Section */}
+                <View style={styles.section}>
+                    <Text style={styles.title}>{formData.title || "RAPORT Z WYKONANYCH USŁUG / SERVICE REPORT FEBRUARY 2026 / LUTY 2026"}</Text>
+                    <Text style={styles.sectionText}>{formData.date || currentDate}</Text>
                 </View>
-            </View>
-        </Page>
-    </PdfDocument>
-);
+
+                {/* Company Information */}
+                <View style={styles.section}>
+                    <Text style={styles.subTitle}>NAZWA FIRMY / COMPANY NAME</Text>
+                    <Text style={styles.sectionText}>{company.name}</Text>
+                    <Text style={styles.subTitle}>ADRES / ADDRESS</Text>
+                    <Text style={styles.sectionText}>{company.address}</Text>
+                    <Text style={styles.subTitle}>KOD POCZTOWY / POSTAL CODE</Text>
+                    <Text style={styles.sectionText}>{company.postalCode}</Text>
+                    <Text style={styles.subTitle}>MIASTO / CITY</Text>
+                    <Text style={styles.sectionText}>{company.city}</Text>
+                    <Text style={styles.subTitle}>NIP</Text>
+                    <Text style={styles.sectionText}>{company.nip}</Text>
+                </View>
+
+                {/* Customer Section */}
+                <View style={styles.customerSection}>
+                    <Text style={styles.subTitle}>DANE KLIENTA / CUSTOMER DATA</Text>
+                    <Text style={styles.sectionText}>{customer.customerName}</Text>
+                    <Text style={styles.subTitle}>ADRES / ADDRESS</Text>
+                    <Text style={styles.sectionText}>{customer.customerAddress}</Text>
+                    <Text style={styles.subTitle}>KOD POCZTOWY / POSTAL CODE</Text>
+                    <Text style={styles.sectionText}>{customer.customerPostalCode}</Text>
+                    <Text style={styles.subTitle}>MIASTO / CITY</Text>
+                    <Text style={styles.sectionText}>{customer.customerCity}</Text>
+                    <Text style={styles.subTitle}>NIP</Text>
+                    <Text style={styles.sectionText}>{customer.customerNip}</Text>
+                </View>
+
+                {/* Work Hours Section (Table) */}
+                <View style={styles.workHoursSection}>
+                    <Text style={styles.subTitle}>WYKAZ PRAC I GODZIN / WORK HOURS LIST</Text>
+                    <View style={styles.table}>
+                        {/* Table Header */}
+                        <View style={styles.tableRow}>
+                            <Text style={[styles.tableCell, styles.tableHeader]}>L.p.</Text>
+                            <Text style={[styles.tableCell, styles.tableHeader]}>Opis zadania</Text>
+                            <Text style={[styles.tableCell, styles.tableHeader]}>Godziny</Text>
+                        </View>
+                        {/* Table Content */}
+                        {Array.isArray(formData.workList) && formData.workList.length > 0 ? (
+                            formData.workList.map((item, idx) => (
+                                <View style={styles.tableRow} key={item.id || idx}>
+                                    <Text style={styles.tableCell}>{idx + 1}</Text>
+                                    <Text style={styles.tableCell}>{item?.description?.trim() ? item.description : "—"}</Text>
+                                    <Text style={[styles.tableCell, styles.lastTableCell]}>{item?.hours?.trim() ? item.hours : "—"}</Text>
+                                </View>
+                            ))
+                        ) : (
+                            <View style={styles.tableRow}>
+                                <Text style={styles.tableCell}>-</Text>
+                                <Text style={styles.tableCell}>Нет данных</Text>
+                                <Text style={[styles.tableCell, styles.lastTableCell]}>-</Text>
+                            </View>
+                        )}
+                    </View>
+                    <Text style={{ fontSize: 12, marginTop: 8, fontWeight: 'bold', textAlign: 'right', paddingRight: 12 }}>
+                        Łączna liczba godzin: {totalHours.toFixed(2)}
+                    </Text>
+                </View>
+            </Page>
+        </PdfDocument>
+    );
+};

@@ -16,9 +16,12 @@ export const LanguageSelector = () => {
     };
 
     return (
-        <Select onChange={handleLanguageChange}>
+        <Select onChange={handleLanguageChange} defaultValue={i18n.language}>
             <option value="en">English</option>
             <option value="pl">Polski</option>
+            <option value="ru">Русский</option>
+            <option value="uz">Oʻzbekcha</option>
+            <option value="kk">Қазақша</option>
         </Select>
     )
 }
